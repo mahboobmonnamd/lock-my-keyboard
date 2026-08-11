@@ -2,6 +2,7 @@
 /.build
 /spike/.build
 DerivedData/
+**/DerivedData/
 *.xcuserstate
 xcuserdata/
 *.moved-aside
