@@ -1,6 +1,6 @@
 cask "lock-my-keyboard" do
   version "1.0.0"
-  sha256 "REPLACE_ON_RELEASE"
+  sha256 "054d16e0227aa85c2b7f1df5f41fe521c1dc95c06f31fb460f86d7512a04a186"
 
   url "https://github.com/mahboobmonnamd/lock-my-keyboard/releases/download/v#{version}/LockMyKeyboard-#{version}.zip"
   name "Lock My Keyboard"
