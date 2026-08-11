@@ -14,10 +14,22 @@ final class AppModel {
     private(set) var uiState: LockUIState = .idle
     private(set) var isBusy = false
     var showHelp = false
-    private let lockService: KeyboardLocking
 
-    init(lockService: KeyboardLocking = KeyboardLockService()) {
+    private let lockService: KeyboardLocking
+    private let isAccessibilityGranted: () -> Bool
+    private let requestAccessibility: () -> Void
+    private let openAccessibilitySettingsHandler: () -> Void
+
+    init(
+        lockService: KeyboardLocking = KeyboardLockService(),
+        isAccessibilityGranted: @escaping () -> Bool = { AccessibilityPermission.isGranted },
+        requestAccessibility: @escaping () -> Void = { AccessibilityPermission.requestTrustPrompt() },
+        openAccessibilitySettings: @escaping () -> Void = { AccessibilityPermission.openSystemSettings() }
+    ) {
         self.lockService = lockService
+        self.isAccessibilityGranted = isAccessibilityGranted
+        self.requestAccessibility = requestAccessibility
+        self.openAccessibilitySettingsHandler = openAccessibilitySettings
     }
 
     var isLocked: Bool {
@@ -61,9 +73,9 @@ final class AppModel {
 
     func lock() {
         guard !isBusy else { return }
-        guard AccessibilityPermission.isGranted else {
+        guard isAccessibilityGranted() else {
             uiState = .needsPermission
-            AccessibilityPermission.requestTrustPrompt()
+            requestAccessibility()
             return
         }
 
@@ -95,15 +107,15 @@ final class AppModel {
     }
 
     func openAccessibilitySettings() {
-        AccessibilityPermission.requestTrustPrompt()
-        AccessibilityPermission.openSystemSettings()
+        requestAccessibility()
+        openAccessibilitySettingsHandler()
     }
 
     func refreshPermissionState() {
         switch uiState {
-        case .needsPermission where AccessibilityPermission.isGranted:
+        case .needsPermission where isAccessibilityGranted():
             uiState = .idle
-        case .error where AccessibilityPermission.isGranted:
+        case .error where isAccessibilityGranted():
             uiState = .idle
         default:
             break
@@ -117,5 +129,17 @@ final class AppModel {
         if case .locked = uiState {
             uiState = .idle
         }
+    }
+
+    /// Test helper: wait until an in-flight lock/unlock Task finishes.
+    func waitUntilIdle(timeoutNanoseconds: UInt64 = 2_000_000_000) async -> Bool {
+        let start = DispatchTime.now().uptimeNanoseconds
+        while isBusy {
+            if DispatchTime.now().uptimeNanoseconds - start > timeoutNanoseconds {
+                return false
+            }
+            await Task.yield()
+        }
+        return true
     }
 }

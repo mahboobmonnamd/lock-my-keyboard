@@ -2,49 +2,59 @@
 
 A simple macOS app for Apple Silicon that temporarily disables the keyboard so you can clean it without accidental typing.
 
-**Lock → clean → Unlock.** One window. No menu bar complexity. No timers. No accounts.
+**Lock → clean → Unlock.** One window. No accounts. No keystroke logging.
 
 ## Platform
 
 | | |
 | --- | --- |
 | CPU | Apple Silicon (`arm64`) only |
-| OS | macOS 26 only |
-| UI | Single window — keyboard image + Lock/Unlock |
+| OS | macOS 26+ |
+| UI | Single window — keyboard art + Lock/Unlock |
 
-## Docs
+## Install (Homebrew)
 
-1. [Technical Review](docs/TECHNICAL_REVIEW.md)
-2. [ADRs](docs/adr/)
-3. [Spec](docs/SPEC.md)
-4. [Original PRD (superseded for MVP shape)](docs/keyboard_lock_macos_prd.md)
-5. [Spike results](spike/RESULTS.md)
+```bash
+brew tap mahboobmonnamd/lock-my-keyboard https://github.com/mahboobmonnamd/lock-my-keyboard
+brew install --cask --no-quarantine lock-my-keyboard
+open -a LockMyKeyboard
+```
 
-## Run the app
+Grant **Accessibility** on first Lock (System Settings → Privacy & Security → Accessibility).
+
+> First releases are unsigned. `--no-quarantine` (and the cask `postflight`) clears Gatekeeper quarantine. Notarization can come later.
+
+## Develop
 
 ```bash
 open LockMyKeyboard/LockMyKeyboard.xcodeproj
 ```
 
-Or:
+### Test
 
 ```bash
-cd LockMyKeyboard
-xcodebuild -scheme LockMyKeyboard -configuration Debug build
-open ~/Library/Developer/Xcode/DerivedData/*/Build/Products/Debug/LockMyKeyboard.app
+./scripts/test.sh
 ```
 
-Grant **Accessibility** on first Lock (System Settings → Privacy & Security → Accessibility).
-
-## Spike
+### Release
 
 ```bash
-cd spike
-swift run KeyboardLockSpike
-# or headless:
-swift run KeyboardLockSpike --verify
+./scripts/release.sh 1.0.0
+# then commit the updated Casks/lock-my-keyboard.rb sha256 and push
 ```
 
-## Status
+## Docs
 
-MVP app in `LockMyKeyboard/` — one window, Lock / Unlock, Apple Silicon + macOS 26.
+- [Testing](docs/TESTING.md)
+- [Technical Review](docs/TECHNICAL_REVIEW.md)
+- [Spec](docs/SPEC.md)
+- [ADRs](docs/adr/)
+- [App icon](docs/APP_ICON.md)
+- [Changelog](CHANGELOG.md)
+
+## Manual smoke
+
+1. Run the app → **Lock** → grant Accessibility if asked.
+2. Type in Notes — nothing should appear.
+3. **Unlock** — typing returns (loader may flash briefly).
+4. **Lock** → quit — typing returns.
