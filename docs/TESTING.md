@@ -30,6 +30,7 @@ After a release is published and the cask sha256 is on `main`:
 
 ```bash
 brew tap mahboobmonnamd/lock-my-keyboard https://github.com/mahboobmonnamd/lock-my-keyboard
+brew trust mahboobmonnamd/lock-my-keyboard
 brew install --cask lock-my-keyboard
 
 ls /Applications/LockMyKeyboard.app

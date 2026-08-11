@@ -18,11 +18,12 @@ A simple macOS app for Apple Silicon that temporarily disables the keyboard so y
 
 ```bash
 brew tap mahboobmonnamd/lock-my-keyboard https://github.com/mahboobmonnamd/lock-my-keyboard
+brew trust mahboobmonnamd/lock-my-keyboard
 brew install --cask lock-my-keyboard
 open -a LockMyKeyboard
 ```
 
-Then grant **Accessibility** on first Lock  
+`brew trust` is required once for this third-party tap. Then grant **Accessibility** on first Lock  
 (System Settings → Privacy & Security → Accessibility).
 
 Full steps, zip install, upgrade/uninstall, and troubleshooting: **[docs/INSTALL.md](docs/INSTALL.md)**

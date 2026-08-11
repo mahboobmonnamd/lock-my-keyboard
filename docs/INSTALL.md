@@ -12,18 +12,31 @@ Release: https://github.com/mahboobmonnamd/lock-my-keyboard/releases/tag/v1.0.0
 
 ## Install with Homebrew
 
+Third-party taps are untrusted by default. Trust this tap once, then install:
+
 ```bash
 brew tap mahboobmonnamd/lock-my-keyboard https://github.com/mahboobmonnamd/lock-my-keyboard
+brew trust mahboobmonnamd/lock-my-keyboard
 brew install --cask lock-my-keyboard
 open -a LockMyKeyboard
+```
+
+If you already tapped and saw `Refusing to load cask … from untrusted tap`, run:
+
+```bash
+brew trust mahboobmonnamd/lock-my-keyboard
+# or only this cask:
+brew trust --cask mahboobmonnamd/lock-my-keyboard/lock-my-keyboard
+brew install --cask lock-my-keyboard
 ```
 
 ### What this does
 
 1. Taps this GitHub repo (cask lives in `Casks/lock-my-keyboard.rb`).
-2. Downloads `LockMyKeyboard-1.0.0.zip` from the GitHub Release.
-3. Installs `LockMyKeyboard.app` into `/Applications`.
-4. Clears quarantine attributes in a cask `postflight` (`xattr -cr`) so an unsigned first release can open without Gatekeeper friction.
+2. Marks the tap as trusted so Homebrew will load the cask.
+3. Downloads `LockMyKeyboard-1.0.0.zip` from the GitHub Release.
+4. Installs `LockMyKeyboard.app` into `/Applications`.
+5. Clears quarantine attributes in a cask `postflight` (`xattr -cr`) so an unsigned first release can open without Gatekeeper friction.
 
 > Homebrew removed the `--no-quarantine` flag. We clear quarantine in the cask itself for now. Notarization can replace this later.
 
@@ -74,6 +87,7 @@ open -a LockMyKeyboard
 
 | Issue | Fix |
 | --- | --- |
+| `Refusing to load cask … from untrusted tap` | `brew trust mahboobmonnamd/lock-my-keyboard` then `brew install --cask lock-my-keyboard` |
 | `brew tap` permission / Cellar not writable | `sudo chown -R "$(whoami)" /opt/homebrew` then retry |
 | App blocked by macOS | `xattr -cr /Applications/LockMyKeyboard.app` then open again |
 | Lock does nothing | Grant Accessibility for **Lock My Keyboard**, quit and reopen the app |

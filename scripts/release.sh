@@ -88,6 +88,7 @@ First public release — Apple Silicon (arm64), macOS 26.
 
 \`\`\`bash
 brew tap mahboobmonnamd/lock-my-keyboard https://github.com/mahboobmonnamd/lock-my-keyboard
+brew trust mahboobmonnamd/lock-my-keyboard
 brew install --cask lock-my-keyboard
 open -a LockMyKeyboard
 \`\`\`
@@ -116,5 +117,6 @@ echo "  tag:    ${TAG}"
 echo ""
 echo "Commit the updated cask if SHA/version changed, then:"
 echo "  brew tap mahboobmonnamd/lock-my-keyboard https://github.com/mahboobmonnamd/lock-my-keyboard"
+echo "  brew trust mahboobmonnamd/lock-my-keyboard"
 echo "  brew install --cask lock-my-keyboard"
 echo "Docs: docs/INSTALL.md"
