@@ -1,0 +1,14 @@
+.DS_Store
+/.build
+/spike/.build
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+.swiftpm/
+.vscode/
+.idea/
