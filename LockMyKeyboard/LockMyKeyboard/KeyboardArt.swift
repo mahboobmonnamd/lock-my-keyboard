@@ -13,7 +13,7 @@ struct KeyboardArt: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(Color(red: 0.20, green: 0.23, blue: 0.28).opacity(isLocked ? 0.92 : 1))
+                .fill(Theme.keyboardShell.opacity(isLocked ? 0.92 : 1))
                 .shadow(color: .black.opacity(0.12), radius: 18, y: 10)
 
             VStack(spacing: 8) {
@@ -26,7 +26,7 @@ struct KeyboardArt: View {
                 }
 
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .fill(keyFill)
+                    .fill(Theme.keyCap)
                     .frame(width: 160, height: 22)
                     .overlay {
                         if isLocked {
@@ -45,21 +45,18 @@ struct KeyboardArt: View {
                     .foregroundStyle(.white.opacity(0.92))
                     .padding(16)
                     .background(.ultraThinMaterial, in: Circle())
+                    .accessibilityHidden(true)
             }
         }
-        .animation(.easeInOut(duration: 0.22), value: isLocked)
-        .accessibilityLabel(isLocked ? "Keyboard locked" : "Keyboard unlocked")
-    }
-
-    private var keyFill: Color {
-        Color(red: 0.32, green: 0.36, blue: 0.42)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(isLocked ? "Keyboard illustration, locked" : "Keyboard illustration, unlocked")
     }
 
     private func keyCap(_ label: String) -> some View {
         Text(label)
             .font(.system(size: 10, weight: .medium, design: .rounded))
-            .foregroundStyle(Color(red: 0.88, green: 0.90, blue: 0.93))
+            .foregroundStyle(Theme.keyGlyph)
             .frame(width: 26, height: 26)
-            .background(keyFill, in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+            .background(Theme.keyCap, in: RoundedRectangle(cornerRadius: 5, style: .continuous))
     }
 }

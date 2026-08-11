@@ -13,6 +13,9 @@
 		A10000000000000000000004 /* KeyboardLockService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* KeyboardLockService.swift */; };
 		A10000000000000000000005 /* KeyboardArt.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005 /* KeyboardArt.swift */; };
 		A10000000000000000000006 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006 /* Assets.xcassets */; };
+		A1000000000000000000000A /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000A /* Theme.swift */; };
+		A1000000000000000000000B /* AccessibilityPermission.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000B /* AccessibilityPermission.swift */; };
+		A1000000000000000000000C /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000C /* HelpView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,6 +28,9 @@
 		A20000000000000000000007 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A20000000000000000000008 /* LockMyKeyboard.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LockMyKeyboard.entitlements; sourceTree = "<group>"; };
 		A20000000000000000000009 /* LockMyKeyboard.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LockMyKeyboard.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A2000000000000000000000A /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		A2000000000000000000000B /* AccessibilityPermission.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityPermission.swift; sourceTree = "<group>"; };
+		A2000000000000000000000C /* HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,6 +60,9 @@
 				A20000000000000000000003 /* AppModel.swift */,
 				A20000000000000000000004 /* KeyboardLockService.swift */,
 				A20000000000000000000005 /* KeyboardArt.swift */,
+				A2000000000000000000000A /* Theme.swift */,
+				A2000000000000000000000B /* AccessibilityPermission.swift */,
+				A2000000000000000000000C /* HelpView.swift */,
 				A20000000000000000000006 /* Assets.xcassets */,
 				A20000000000000000000007 /* Info.plist */,
 				A20000000000000000000008 /* LockMyKeyboard.entitlements */,
@@ -143,6 +152,9 @@
 				A10000000000000000000003 /* AppModel.swift in Sources */,
 				A10000000000000000000004 /* KeyboardLockService.swift in Sources */,
 				A10000000000000000000005 /* KeyboardArt.swift in Sources */,
+				A1000000000000000000000A /* Theme.swift in Sources */,
+				A1000000000000000000000B /* AccessibilityPermission.swift in Sources */,
+				A1000000000000000000000C /* HelpView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

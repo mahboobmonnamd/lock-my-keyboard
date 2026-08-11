@@ -1,18 +1,49 @@
 import CoreGraphics
 import Foundation
+import os.log
 
-enum KeyboardLockError: Error {
+private let log = Logger(subsystem: "com.lockmykeyboard.app", category: "KeyboardLock")
+
+enum KeyboardLockError: LocalizedError, Equatable {
     case tapCreateFailed
+    case alreadyActive
+
+    var errorDescription: String? {
+        switch self {
+        case .tapCreateFailed:
+            return "macOS refused to create the keyboard event tap. Confirm Accessibility permission for Lock My Keyboard, then try again."
+        case .alreadyActive:
+            return "The keyboard is already locked."
+        }
+    }
+}
+
+protocol KeyboardLocking: AnyObject {
+    var isActive: Bool { get }
+    func start() throws
+    func stop()
 }
 
 /// Session-level CGEvent tap that swallows keyboard events while active.
-final class KeyboardLockService: @unchecked Sendable {
+///
+/// Safety contract:
+/// - Installs only while the user has explicitly locked.
+/// - Filters keyDown / keyUp / flagsChanged only — pointer events pass through.
+/// - Never logs key codes or characters.
+/// - `stop()` and process termination fail open (keyboard returns to normal).
+final class KeyboardLockService: KeyboardLocking, @unchecked Sendable {
     private let tapBox = TapBox()
     private var runLoopSource: CFRunLoopSource?
+    private let stateLock = NSLock()
 
-    var isActive: Bool { tapBox.eventTap != nil }
+    var isActive: Bool {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        return tapBox.eventTap != nil
+    }
 
     func start() throws {
+        // Tear down any previous tap without holding the lock across CF calls.
         stop()
 
         let mask =
@@ -26,10 +57,12 @@ final class KeyboardLockService: @unchecked Sendable {
                     let box = Unmanaged<TapBox>.fromOpaque(refcon).takeUnretainedValue()
                     if let tap = box.eventTap {
                         CGEvent.tapEnable(tap: tap, enable: true)
+                        log.debug("Re-enabled event tap after system disable")
                     }
                 }
                 return Unmanaged.passUnretained(event)
             }
+            // Swallow keyboard events. Do not inspect or log key content.
             return nil
         }
 
@@ -41,30 +74,39 @@ final class KeyboardLockService: @unchecked Sendable {
             callback: callback,
             userInfo: Unmanaged.passUnretained(tapBox).toOpaque()
         ) else {
+            log.error("CGEvent.tapCreate returned nil")
             throw KeyboardLockError.tapCreateFailed
         }
 
-        tapBox.eventTap = tap
-        runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
-        CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
+        let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
+        CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
+
+        stateLock.lock()
+        tapBox.eventTap = tap
+        runLoopSource = source
+        stateLock.unlock()
+
+        log.info("Keyboard lock engaged")
     }
 
     func stop() {
-        if let source = runLoopSource {
-            CFRunLoopRemoveSource(CFRunLoopGetMain(), source, .commonModes)
-            runLoopSource = nil
-        }
-        if let tap = tapBox.eventTap {
-            CGEvent.tapEnable(tap: tap, enable: false)
-            tapBox.eventTap = nil
-        }
-    }
+        stateLock.lock()
+        let source = runLoopSource
+        let tap = tapBox.eventTap
+        runLoopSource = nil
+        tapBox.eventTap = nil
+        stateLock.unlock()
 
-    deinit {
-        // Best-effort fail-open if the service is released unexpectedly.
-        if let tap = tapBox.eventTap {
+        // Disable / remove outside the lock so the UI thread cannot deadlock
+        // against an in-flight tap callback.
+        if let tap {
             CGEvent.tapEnable(tap: tap, enable: false)
+            CFMachPortInvalidate(tap)
+            log.info("Keyboard lock released")
+        }
+        if let source {
+            CFRunLoopRemoveSource(CFRunLoopGetMain(), source, .commonModes)
         }
     }
 }
