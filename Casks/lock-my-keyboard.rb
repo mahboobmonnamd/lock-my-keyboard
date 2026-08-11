@@ -13,6 +13,7 @@ cask "lock-my-keyboard" do
   app "LockMyKeyboard.app"
 
   # Unsigned first release: clear Gatekeeper quarantine after install.
+  # (Homebrew removed --no-quarantine; this is the supported local workaround for now.)
   postflight do
     app_path = "#{appdir}/LockMyKeyboard.app"
     system_command "/usr/bin/xattr", args: ["-cr", app_path], sudo: false

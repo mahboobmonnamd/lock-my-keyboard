@@ -12,17 +12,24 @@ A simple macOS app for Apple Silicon that temporarily disables the keyboard so y
 | OS | macOS 26+ |
 | UI | Single window — keyboard art + Lock/Unlock |
 
-## Install (Homebrew)
+## Install with Homebrew
+
+**v1.0.0 is released** — you can install via brew:
 
 ```bash
 brew tap mahboobmonnamd/lock-my-keyboard https://github.com/mahboobmonnamd/lock-my-keyboard
-brew install --cask --no-quarantine lock-my-keyboard
+brew install --cask lock-my-keyboard
 open -a LockMyKeyboard
 ```
 
-Grant **Accessibility** on first Lock (System Settings → Privacy & Security → Accessibility).
+Then grant **Accessibility** on first Lock  
+(System Settings → Privacy & Security → Accessibility).
 
-> First releases are unsigned. `--no-quarantine` (and the cask `postflight`) clears Gatekeeper quarantine. Notarization can come later.
+Full steps, zip install, upgrade/uninstall, and troubleshooting: **[docs/INSTALL.md](docs/INSTALL.md)**
+
+Release page: https://github.com/mahboobmonnamd/lock-my-keyboard/releases/tag/v1.0.0
+
+> First releases are unsigned. The cask clears quarantine with `xattr` after install (Homebrew no longer supports `--no-quarantine`).
 
 ## Develop
 
@@ -39,12 +46,13 @@ open LockMyKeyboard/LockMyKeyboard.xcodeproj
 ### Release
 
 ```bash
-./scripts/release.sh 1.0.0
-# then commit the updated Casks/lock-my-keyboard.rb sha256 and push
+./scripts/release.sh 1.0.1
+# commit updated Casks/lock-my-keyboard.rb sha256, then push
 ```
 
 ## Docs
 
+- [Install](docs/INSTALL.md)
 - [Testing](docs/TESTING.md)
 - [Technical Review](docs/TECHNICAL_REVIEW.md)
 - [Spec](docs/SPEC.md)

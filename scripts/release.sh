@@ -88,7 +88,8 @@ First public release — Apple Silicon (arm64), macOS 26.
 
 \`\`\`bash
 brew tap mahboobmonnamd/lock-my-keyboard https://github.com/mahboobmonnamd/lock-my-keyboard
-brew install --cask --no-quarantine lock-my-keyboard
+brew install --cask lock-my-keyboard
+open -a LockMyKeyboard
 \`\`\`
 
 Or download \`${ZIP_NAME}\`, unzip, then:
@@ -98,10 +99,10 @@ xattr -cr LockMyKeyboard.app
 open LockMyKeyboard.app
 \`\`\`
 
-Grant **Accessibility** on first Lock.
+Grant **Accessibility** on first Lock. Full guide: docs/INSTALL.md
 
 ### Notes
-- Unsigned / not notarized (quarantine cleared for local/brew install).
+- Unsigned / not notarized (cask postflight clears quarantine).
 - No keystroke logging. Pointer stays active while locked.
 EOF
 )"
@@ -115,4 +116,5 @@ echo "  tag:    ${TAG}"
 echo ""
 echo "Commit the updated cask if SHA/version changed, then:"
 echo "  brew tap mahboobmonnamd/lock-my-keyboard https://github.com/mahboobmonnamd/lock-my-keyboard"
-echo "  brew install --cask --no-quarantine lock-my-keyboard"
+echo "  brew install --cask lock-my-keyboard"
+echo "Docs: docs/INSTALL.md"

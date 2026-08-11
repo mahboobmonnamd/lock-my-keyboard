@@ -17,7 +17,7 @@ Covers:
 
 ## Manual smoke (before tagging a release)
 
-1. `./scripts/release.sh 1.0.0` or Run from Xcode.
+1. Run from Xcode, or install the release build.
 2. Grant Accessibility when prompted.
 3. Open Notes → **Lock** → type → no characters.
 4. **Unlock** → loader appears briefly → typing works.
@@ -26,9 +26,15 @@ Covers:
 
 ## Homebrew install check
 
+After a release is published and the cask sha256 is on `main`:
+
 ```bash
 brew tap mahboobmonnamd/lock-my-keyboard https://github.com/mahboobmonnamd/lock-my-keyboard
-brew install --cask --no-quarantine lock-my-keyboard
+brew install --cask lock-my-keyboard
+
+ls /Applications/LockMyKeyboard.app
 xattr -p com.apple.quarantine /Applications/LockMyKeyboard.app || echo "no quarantine (ok)"
 open -a LockMyKeyboard
 ```
+
+See [INSTALL.md](./INSTALL.md) for upgrade, uninstall, and troubleshooting.
