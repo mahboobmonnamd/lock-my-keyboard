@@ -19,6 +19,7 @@ enum SpikeVerify {
             (1 << CGEventType.keyDown.rawValue)
             | (1 << CGEventType.keyUp.rawValue)
             | (1 << CGEventType.flagsChanged.rawValue)
+            | (1 << 14) // NX_SYSDEFINED (media / function specials)
 
         let callback: CGEventTapCallBack = { _, _, event, _ in
             Unmanaged.passUnretained(event)

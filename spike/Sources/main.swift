@@ -128,6 +128,8 @@ final class KeyboardLockSpike: NSObject {
             (1 << CGEventType.keyDown.rawValue)
             | (1 << CGEventType.keyUp.rawValue)
             | (1 << CGEventType.flagsChanged.rawValue)
+            // NX_SYSDEFINED — brightness / volume / mute / media (e.g. F10 mute)
+            | (1 << 14)
 
         let callback: CGEventTapCallBack = { _, type, event, refcon in
             if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
@@ -137,6 +139,14 @@ final class KeyboardLockSpike: NSObject {
                         CGEvent.tapEnable(tap: tap, enable: true)
                         print("[spike] re-enabled tap after system disable")
                     }
+                }
+                return Unmanaged.passUnretained(event)
+            }
+
+            // Media keys: swallow only AUX_CONTROL_BUTTONS (subtype 8); pass mouse subtypes.
+            if type.rawValue == 14 {
+                if let nsEvent = NSEvent(cgEvent: event), nsEvent.subtype.rawValue == 8 {
+                    return nil
                 }
                 return Unmanaged.passUnretained(event)
             }

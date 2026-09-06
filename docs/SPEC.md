@@ -60,7 +60,7 @@ Lock My Keyboard is a one-window macOS app for Apple Silicon (macOS 26). The use
 | --- | --- | --- |
 | SPEC-001 | One-window SwiftUI app named Lock My Keyboard | P0 |
 | SPEC-002 | Show keyboard image and Lock/Unlock control | P0 |
-| SPEC-003 | Lock suppresses keyDown/keyUp/flagsChanged to other apps | P0 |
+| SPEC-003 | Lock suppresses keyDown/keyUp/flagsChanged and media/function systemDefined keys (e.g. F10 mute) to other apps | P0 |
 | SPEC-004 | Pointer remains usable to Unlock | P0 |
 | SPEC-005 | Unlock restores input within 1s | P0 |
 | SPEC-006 | Refuse Lock without Accessibility permission + link to Settings | P0 |

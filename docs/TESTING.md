@@ -19,8 +19,8 @@ Covers:
 
 1. Run from Xcode, or install the release build.
 2. Grant Accessibility when prompted.
-3. Open Notes → **Lock** → type → no characters.
-4. **Unlock** → loader appears briefly → typing works.
+3. Open Notes → **Lock** → type → no characters. Also press F10 (mute) / volume / brightness — no effect.
+4. **Unlock** → loader appears briefly → typing works; media keys work again.
 5. **Lock** → quit app → typing works again.
 6. Confirm Help sheet opens.
 

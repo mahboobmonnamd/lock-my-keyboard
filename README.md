@@ -14,7 +14,7 @@ A simple macOS app for Apple Silicon that temporarily disables the keyboard so y
 
 ## Install with Homebrew
 
-**v1.0.0 is released** — you can install via brew:
+**v1.0.1 is released** — you can install via brew:
 
 ```bash
 brew tap mahboobmonnamd/lock-my-keyboard https://github.com/mahboobmonnamd/lock-my-keyboard
@@ -28,7 +28,7 @@ open -a LockMyKeyboard
 
 Full steps, zip install, upgrade/uninstall, and troubleshooting: **[docs/INSTALL.md](docs/INSTALL.md)**
 
-Release page: https://github.com/mahboobmonnamd/lock-my-keyboard/releases/tag/v1.0.0
+Release page: https://github.com/mahboobmonnamd/lock-my-keyboard/releases/tag/v1.0.1
 
 > First releases are unsigned. The cask clears quarantine with `xattr` after install (Homebrew no longer supports `--no-quarantine`).
 

@@ -1,8 +1,8 @@
 # Install Lock My Keyboard
 
-**Yes — v1.0.0 is released.** You can install it with Homebrew from this repo’s cask.
+**Yes — v1.0.1 is released.** You can install it with Homebrew from this repo’s cask.
 
-Release: https://github.com/mahboobmonnamd/lock-my-keyboard/releases/tag/v1.0.0
+Release: https://github.com/mahboobmonnamd/lock-my-keyboard/releases/tag/v1.0.1
 
 ## Requirements
 
@@ -34,7 +34,7 @@ brew install --cask lock-my-keyboard
 
 1. Taps this GitHub repo (cask lives in `Casks/lock-my-keyboard.rb`).
 2. Marks the tap as trusted so Homebrew will load the cask.
-3. Downloads `LockMyKeyboard-1.0.0.zip` from the GitHub Release.
+3. Downloads `LockMyKeyboard-1.0.1.zip` from the GitHub Release.
 4. Installs `LockMyKeyboard.app` into `/Applications`.
 5. Clears quarantine attributes in a cask `postflight` (`xattr -cr`) so an unsigned first release can open without Gatekeeper friction.
 
@@ -67,9 +67,9 @@ brew zap --cask lock-my-keyboard
 
 ```bash
 # download from:
-# https://github.com/mahboobmonnamd/lock-my-keyboard/releases/tag/v1.0.0
+# https://github.com/mahboobmonnamd/lock-my-keyboard/releases/tag/v1.0.1
 
-unzip LockMyKeyboard-1.0.0.zip
+unzip LockMyKeyboard-1.0.1.zip
 xattr -cr LockMyKeyboard.app
 mv LockMyKeyboard.app /Applications/
 open -a LockMyKeyboard
@@ -97,7 +97,7 @@ open -a LockMyKeyboard
 
 ```bash
 ./scripts/test.sh
-./scripts/release.sh 1.0.1
+./scripts/release.sh 1.0.2
 # commit updated Casks/lock-my-keyboard.rb (sha256), push main
 ```
 

@@ -82,13 +82,14 @@ else
     --notes "$(cat <<EOF
 ## Lock My Keyboard ${VERSION}
 
-First public release — Apple Silicon (arm64), macOS 26.
-
-### Install with Homebrew
+### Install / upgrade with Homebrew
 
 \`\`\`bash
 brew tap mahboobmonnamd/lock-my-keyboard https://github.com/mahboobmonnamd/lock-my-keyboard
 brew trust mahboobmonnamd/lock-my-keyboard
+brew update
+brew upgrade --cask lock-my-keyboard
+# or first install:
 brew install --cask lock-my-keyboard
 open -a LockMyKeyboard
 \`\`\`
@@ -101,6 +102,9 @@ open LockMyKeyboard.app
 \`\`\`
 
 Grant **Accessibility** on first Lock. Full guide: docs/INSTALL.md
+
+### Changes
+See [CHANGELOG.md](https://github.com/mahboobmonnamd/lock-my-keyboard/blob/main/CHANGELOG.md).
 
 ### Notes
 - Unsigned / not notarized (cask postflight clears quarantine).

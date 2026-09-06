@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1 — 2026-09-06
+
+### Fixed
+- Media and top-row function keys (mute, volume, brightness, play/pause) are now blocked while locked — they previously passed through as system-defined events
+
 ## 1.0.0 — 2026-08-11
 
 ### Added

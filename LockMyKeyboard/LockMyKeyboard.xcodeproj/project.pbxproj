@@ -19,6 +19,7 @@
 		B10000000000000000000001 /* AppModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* AppModelTests.swift */; };
 		B10000000000000000000002 /* KeyboardLockErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* KeyboardLockErrorTests.swift */; };
 		B10000000000000000000003 /* MockKeyboardLockService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000003 /* MockKeyboardLockService.swift */; };
+		B10000000000000000000005 /* KeyboardLockEventPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000005 /* KeyboardLockEventPolicyTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,6 +49,7 @@
 		B20000000000000000000002 /* KeyboardLockErrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardLockErrorTests.swift; sourceTree = "<group>"; };
 		B20000000000000000000003 /* MockKeyboardLockService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockKeyboardLockService.swift; sourceTree = "<group>"; };
 		B20000000000000000000004 /* LockMyKeyboardTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LockMyKeyboardTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B20000000000000000000005 /* KeyboardLockEventPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardLockEventPolicyTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -110,6 +112,7 @@
 				B20000000000000000000001 /* AppModelTests.swift */,
 				B20000000000000000000002 /* KeyboardLockErrorTests.swift */,
 				B20000000000000000000003 /* MockKeyboardLockService.swift */,
+				B20000000000000000000005 /* KeyboardLockEventPolicyTests.swift */,
 			);
 			path = LockMyKeyboardTests;
 			sourceTree = "<group>";
@@ -231,6 +234,7 @@
 				B10000000000000000000001 /* AppModelTests.swift in Sources */,
 				B10000000000000000000002 /* KeyboardLockErrorTests.swift in Sources */,
 				B10000000000000000000003 /* MockKeyboardLockService.swift in Sources */,
+				B10000000000000000000005 /* KeyboardLockEventPolicyTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -286,7 +290,7 @@
 				CODE_SIGN_ENTITLEMENTS = LockMyKeyboard/LockMyKeyboard.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = LockMyKeyboard/Info.plist;
@@ -294,7 +298,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.lockmykeyboard.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -311,7 +315,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				ENABLE_HARDENED_RUNTIME = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = LockMyKeyboard/Info.plist;
@@ -319,7 +323,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.lockmykeyboard.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -333,9 +337,9 @@
 				ARCHS = arm64;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.lockmykeyboard.app.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 6.0;
@@ -349,9 +353,9 @@
 				ARCHS = arm64;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.lockmykeyboard.app.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 6.0;
