@@ -1,0 +1,28 @@
+name: macOS tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Environment
+        run: |
+          sw_vers
+          uname -m
+          xcodebuild -version
+      - name: Static checks
+        run: |
+          bash -n scripts/test.sh scripts/release.sh
+          ruby -c Casks/lock-my-keyboard.rb
+      - name: Swift tests
+        run: ./scripts/test.sh

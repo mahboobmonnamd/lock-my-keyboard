@@ -12,11 +12,11 @@ Release: https://github.com/mahboobmonnamd/lock-my-keyboard/releases/tag/v1.0.1
 
 ## Install with Homebrew
 
-Third-party taps are untrusted by default. Trust this tap once, then install:
+Third-party taps are untrusted by default. Trust only this specific cask, then install:
 
 ```bash
 brew tap mahboobmonnamd/lock-my-keyboard https://github.com/mahboobmonnamd/lock-my-keyboard
-brew trust mahboobmonnamd/lock-my-keyboard
+brew trust --cask mahboobmonnamd/lock-my-keyboard/lock-my-keyboard
 brew install --cask lock-my-keyboard
 open -a LockMyKeyboard
 ```
@@ -25,20 +25,18 @@ If you already tapped and saw `Refusing to load cask … from untrusted tap`, ru
 
 ```bash
 brew trust mahboobmonnamd/lock-my-keyboard
-# or only this cask:
-brew trust --cask mahboobmonnamd/lock-my-keyboard/lock-my-keyboard
 brew install --cask lock-my-keyboard
 ```
 
 ### What this does
 
 1. Taps this GitHub repo (cask lives in `Casks/lock-my-keyboard.rb`).
-2. Marks the tap as trusted so Homebrew will load the cask.
+2. Trusts only this cask, not all packages in the tap.
 3. Downloads `LockMyKeyboard-1.0.1.zip` from the GitHub Release.
 4. Installs `LockMyKeyboard.app` into `/Applications`.
 5. Clears quarantine attributes in a cask `postflight` (`xattr -cr`) so an unsigned first release can open without Gatekeeper friction.
 
-> Homebrew removed the `--no-quarantine` flag. We clear quarantine in the cask itself for now. Notarization can replace this later.
+> **Unsigned distribution limitation:** Homebrew's postflight clears quarantine to permit launching without Apple Developer ID. This bypasses Gatekeeper's normal origin verification; it is not a security validation. Install only if you trust this repository and verify the release checksum. Signing/notarization remains deferred due to cost.
 
 ### First launch
 
@@ -66,11 +64,12 @@ brew zap --cask lock-my-keyboard
 ## Install from the release zip (without Homebrew)
 
 ```bash
-# download from:
+# Download the zip and its .sha256 file from:
 # https://github.com/mahboobmonnamd/lock-my-keyboard/releases/tag/v1.0.1
+shasum -a 256 -c LockMyKeyboard-1.0.1.zip.sha256
 
 unzip LockMyKeyboard-1.0.1.zip
-xattr -cr LockMyKeyboard.app
+xattr -dr com.apple.quarantine LockMyKeyboard.app
 mv LockMyKeyboard.app /Applications/
 open -a LockMyKeyboard
 ```
@@ -79,7 +78,7 @@ open -a LockMyKeyboard
 
 ```bash
 ls /Applications/LockMyKeyboard.app
-xattr -p com.apple.quarantine /Applications/LockMyKeyboard.app || echo "no quarantine (ok)"
+xattr -p com.apple.quarantine /Applications/LockMyKeyboard.app || echo "No quarantine attribute (expected for unsigned workaround; not a security check)"
 open -a LockMyKeyboard
 ```
 
@@ -88,8 +87,8 @@ open -a LockMyKeyboard
 | Issue | Fix |
 | --- | --- |
 | `Refusing to load cask … from untrusted tap` | `brew trust mahboobmonnamd/lock-my-keyboard` then `brew install --cask lock-my-keyboard` |
-| `brew tap` permission / Cellar not writable | `sudo chown -R "$(whoami)" /opt/homebrew` then retry |
-| App blocked by macOS | `xattr -cr /Applications/LockMyKeyboard.app` then open again |
+| `brew tap` permission / Cellar not writable | Run `brew doctor` and follow Homebrew's targeted ownership guidance; do **not** recursively change `/opt/homebrew` ownership |
+| App blocked by macOS | Confirm the download source and SHA-256 first. If proceeding with this unsigned release, remove only `com.apple.quarantine` using `xattr -dr com.apple.quarantine /Applications/LockMyKeyboard.app` |
 | Lock does nothing | Grant Accessibility for **Lock My Keyboard**, quit and reopen the app |
 | Wrong Mac | Apple Silicon + macOS 26 only |
 

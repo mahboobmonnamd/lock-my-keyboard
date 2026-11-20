@@ -15,6 +15,8 @@ final class AppModel {
     private(set) var isBusy = false
     var showHelp = false
 
+    @ObservationIgnored private var healthMonitor: Task<Void, Never>?
+
     private let lockService: KeyboardLocking
     private let isAccessibilityGranted: () -> Bool
     private let requestAccessibility: () -> Void
@@ -85,7 +87,12 @@ final class AppModel {
             await Task.yield()
             do {
                 try lockService.start()
+                guard lockService.isActive else {
+                    lockService.stop()
+                    throw KeyboardLockError.tapEnableFailed
+                }
                 uiState = .locked
+                beginMonitoringLock()
             } catch let error as LocalizedError {
                 uiState = .error(error.errorDescription ?? "Could not lock the keyboard.")
             } catch {
@@ -97,6 +104,8 @@ final class AppModel {
 
     func unlock() {
         guard !isBusy else { return }
+        healthMonitor?.cancel()
+        healthMonitor = nil
         isBusy = true
         Task { @MainActor in
             await Task.yield()
@@ -115,15 +124,44 @@ final class AppModel {
         switch uiState {
         case .needsPermission where isAccessibilityGranted():
             uiState = .idle
-        case .error where isAccessibilityGranted():
-            uiState = .idle
         default:
             break
         }
     }
 
+    /// Update the UI promptly when the event tap or Accessibility permission is lost.
+    /// Also called from the monitor and when the app becomes active.
+    func refreshLockHealth() {
+        guard isLocked, !isBusy else { return }
+        guard isAccessibilityGranted(), lockService.isActive else {
+            healthMonitor?.cancel()
+            healthMonitor = nil
+            lockService.stop()
+            uiState = .error("Keyboard protection stopped unexpectedly. Typing may be active. Check Accessibility and click Lock to retry.")
+            return
+        }
+    }
+
+    private func beginMonitoringLock() {
+        healthMonitor?.cancel()
+        healthMonitor = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                do {
+                    try await Task.sleep(for: .milliseconds(500))
+                } catch {
+                    return
+                }
+                guard let self, !Task.isCancelled else { return }
+                self.refreshLockHealth()
+                guard self.isLocked else { return }
+            }
+        }
+    }
+
     /// Fail-open: always release the tap before the process exits.
     func prepareToQuit() {
+        healthMonitor?.cancel()
+        healthMonitor = nil
         lockService.stop()
         isBusy = false
         if case .locked = uiState {

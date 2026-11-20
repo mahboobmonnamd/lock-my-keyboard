@@ -7,12 +7,15 @@ private let log = Logger(subsystem: "com.lockmykeyboard.app", category: "Keyboar
 
 enum KeyboardLockError: LocalizedError, Equatable {
     case tapCreateFailed
+    case tapEnableFailed
     case alreadyActive
 
     var errorDescription: String? {
         switch self {
         case .tapCreateFailed:
             return "macOS refused to create the keyboard event tap. Confirm Accessibility permission for Lock My Keyboard, then try again."
+        case .tapEnableFailed:
+            return "macOS could not activate keyboard protection. Check Accessibility permission, then try Lock again."
         case .alreadyActive:
             return "The keyboard is already locked."
         }
@@ -77,7 +80,8 @@ final class KeyboardLockService: KeyboardLocking, @unchecked Sendable {
     var isActive: Bool {
         stateLock.lock()
         defer { stateLock.unlock() }
-        return tapBox.eventTap != nil
+        guard let tap = tapBox.eventTap else { return false }
+        return CFMachPortIsValid(tap) && CGEvent.tapIsEnabled(tap: tap)
     }
 
     func start() throws {
@@ -88,9 +92,14 @@ final class KeyboardLockService: KeyboardLocking, @unchecked Sendable {
             if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
                 if let refcon {
                     let box = Unmanaged<TapBox>.fromOpaque(refcon).takeUnretainedValue()
-                    if let tap = box.eventTap {
+                    if let tap = box.eventTap, CFMachPortIsValid(tap) {
                         CGEvent.tapEnable(tap: tap, enable: true)
-                        log.debug("Re-enabled event tap after system disable")
+                        if CGEvent.tapIsEnabled(tap: tap) {
+                            log.debug("Re-enabled event tap after system disable")
+                        } else {
+                            // The UI monitor detects this and clears the stale Locked state.
+                            log.error("Event tap remains disabled after recovery attempt")
+                        }
                     }
                 }
                 return Unmanaged.passUnretained(event)
@@ -125,12 +134,17 @@ final class KeyboardLockService: KeyboardLocking, @unchecked Sendable {
 
         let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
         CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
-        CGEvent.tapEnable(tap: tap, enable: true)
 
         stateLock.lock()
         tapBox.eventTap = tap
         runLoopSource = source
         stateLock.unlock()
+
+        CGEvent.tapEnable(tap: tap, enable: true)
+        guard isActive else {
+            stop()
+            throw KeyboardLockError.tapEnableFailed
+        }
 
         log.info("Keyboard lock engaged")
     }

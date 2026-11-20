@@ -21,4 +21,8 @@ final class MockKeyboardLockService: KeyboardLocking, @unchecked Sendable {
         stopCallCount += 1
         active = false
     }
+
+    func simulateUnexpectedStop() {
+        active = false
+    }
 }

@@ -30,6 +30,27 @@ echo "==> Release ${TAG} (${REPO})"
 command -v xcodebuild >/dev/null
 command -v gh >/dev/null
 command -v brew >/dev/null
+command -v git >/dev/null
+
+# Never overwrite a published artifact or create a release from an uncommitted tree.
+if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "ERROR: expected semantic version X.Y.Z" >&2
+  exit 1
+fi
+if ! git -C "$ROOT" diff --quiet || ! git -C "$ROOT" diff --cached --quiet; then
+  echo "ERROR: commit source changes before releasing" >&2
+  exit 1
+fi
+if git -C "$ROOT" show-ref --verify --quiet "refs/tags/$TAG"; then
+  echo "ERROR: tag $TAG already exists locally; choose a new version" >&2
+  exit 1
+fi
+if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+  echo "ERROR: release $TAG already exists; never overwrite a published build" >&2
+  exit 1
+fi
+SOURCE_SHA="$(git -C "$ROOT" rev-parse HEAD)"
+echo "    source commit: ${SOURCE_SHA}"
 
 echo "==> 1/6 Tests"
 bash "$ROOT/scripts/test.sh"
@@ -72,12 +93,9 @@ else
 fi
 
 echo "==> 6/6 GitHub release ${TAG}"
-if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
-  echo "    release ${TAG} exists — uploading assets"
-  gh release upload "$TAG" "$ZIP_PATH" "$DIST/${ZIP_NAME}.sha256" --repo "$REPO" --clobber
-else
-  gh release create "$TAG" "$ZIP_PATH" "$DIST/${ZIP_NAME}.sha256" \
-    --repo "$REPO" \
+gh release create "$TAG" "$ZIP_PATH" "$DIST/${ZIP_NAME}.sha256" \
+  --repo "$REPO" \
+  --target "$SOURCE_SHA" \
     --title "Lock My Keyboard ${VERSION}" \
     --notes "$(cat <<EOF
 ## Lock My Keyboard ${VERSION}
@@ -86,7 +104,7 @@ else
 
 \`\`\`bash
 brew tap mahboobmonnamd/lock-my-keyboard https://github.com/mahboobmonnamd/lock-my-keyboard
-brew trust mahboobmonnamd/lock-my-keyboard
+brew trust --cask mahboobmonnamd/lock-my-keyboard/lock-my-keyboard
 brew update
 brew upgrade --cask lock-my-keyboard
 # or first install:
@@ -97,7 +115,7 @@ open -a LockMyKeyboard
 Or download \`${ZIP_NAME}\`, unzip, then:
 
 \`\`\`bash
-xattr -cr LockMyKeyboard.app
+xattr -dr com.apple.quarantine LockMyKeyboard.app
 open LockMyKeyboard.app
 \`\`\`
 
@@ -111,7 +129,6 @@ See [CHANGELOG.md](https://github.com/mahboobmonnamd/lock-my-keyboard/blob/main/
 - No keystroke logging. Pointer stays active while locked.
 EOF
 )"
-fi
 
 echo ""
 echo "Done."

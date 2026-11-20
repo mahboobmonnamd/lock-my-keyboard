@@ -54,6 +54,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidBecomeActive(_ notification: Notification) {
+        model?.refreshLockHealth()
         model?.refreshPermissionState()
     }
 }

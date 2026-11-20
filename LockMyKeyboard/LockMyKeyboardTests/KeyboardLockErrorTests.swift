@@ -11,5 +11,7 @@ final class KeyboardLockErrorTests: XCTestCase {
     func testErrorsAreEquatable() {
         XCTAssertEqual(KeyboardLockError.tapCreateFailed, KeyboardLockError.tapCreateFailed)
         XCTAssertNotEqual(KeyboardLockError.tapCreateFailed, KeyboardLockError.alreadyActive)
+        XCTAssertNotEqual(KeyboardLockError.tapCreateFailed, KeyboardLockError.tapEnableFailed)
+        XCTAssertNotNil(KeyboardLockError.tapEnableFailed.errorDescription)
     }
 }

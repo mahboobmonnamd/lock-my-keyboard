@@ -122,6 +122,60 @@ final class AppModelTests: XCTestCase {
         XCTAssertEqual(model.uiState, .idle)
     }
 
+    func testLostTapClearsLockedStateAndWarns() async {
+        let service = MockKeyboardLockService()
+        let model = AppModel(
+            lockService: service,
+            isAccessibilityGranted: { true },
+            requestAccessibility: {},
+            openAccessibilitySettings: {}
+        )
+
+        model.lock()
+        let locked = await model.waitUntilIdle()
+        XCTAssertTrue(locked)
+        service.simulateUnexpectedStop()
+        model.refreshLockHealth()
+
+        XCTAssertFalse(model.isLocked)
+        XCTAssertFalse(service.isActive)
+        XCTAssertEqual(model.primaryButtonTitle, "Lock")
+        guard case .error(let message) = model.uiState else {
+            return XCTFail("Expected warning after event tap failure")
+        }
+        XCTAssertTrue(message.contains("stopped unexpectedly"))
+        XCTAssertTrue(message.contains("Typing may be active"))
+        XCTAssertGreaterThanOrEqual(service.stopCallCount, 1)
+
+        // Re-entering the app must not erase a genuine protection-loss warning.
+        model.refreshPermissionState()
+        XCTAssertEqual(model.uiState, .error(message))
+        model.prepareToQuit()
+    }
+
+    func testRevokedAccessibilityStopsActiveTap() async {
+        final class PermissionFlag: @unchecked Sendable { var granted = true }
+        let permission = PermissionFlag()
+        let service = MockKeyboardLockService()
+        let model = AppModel(
+            lockService: service,
+            isAccessibilityGranted: { permission.granted },
+            requestAccessibility: {},
+            openAccessibilitySettings: {}
+        )
+
+        model.lock()
+        let locked = await model.waitUntilIdle()
+        XCTAssertTrue(locked)
+        permission.granted = false
+        model.refreshLockHealth()
+
+        XCTAssertFalse(model.isLocked)
+        XCTAssertFalse(service.isActive)
+        XCTAssertGreaterThanOrEqual(service.stopCallCount, 1)
+        model.prepareToQuit()
+    }
+
     func testStatusAfterLock() async {
         let model = AppModel(
             lockService: MockKeyboardLockService(),
