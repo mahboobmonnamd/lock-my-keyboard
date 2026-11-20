@@ -34,7 +34,7 @@ brew install --cask lock-my-keyboard
 2. Trusts only this cask, not all packages in the tap.
 3. Downloads `LockMyKeyboard-1.0.1.zip` from the GitHub Release.
 4. Installs `LockMyKeyboard.app` into `/Applications`.
-5. Removes the quarantine attribute for this app only in `postflight_steps` (`xattr -dr com.apple.quarantine`) to permit running the unsigned release.
+5. Removes the quarantine attribute for this app only in `postflight_steps` (`xattr -dr com.apple.quarantine`). A genuine failure aborts installation instead of being silently ignored.
 
 > **Unsigned distribution limitation:** Homebrew's postflight clears quarantine to permit launching without Apple Developer ID. This bypasses Gatekeeper's normal origin verification; it is not a security validation. Install only if you trust this repository and verify the release checksum. Signing/notarization remains deferred due to cost.
 
@@ -100,6 +100,8 @@ open -a LockMyKeyboard
 # Push the source commit before publishing so the release tag can target it.
 ./scripts/release.sh 1.0.2
 # Then commit the updated Casks/lock-my-keyboard.rb checksum and push main.
+# The script rejects tracked/untracked changes, existing local/remote tags and
+# unreachable tag lookup, and verifies the published tag points at the source SHA.
 ```
 
 See also [TESTING.md](./TESTING.md) and [CHANGELOG.md](../CHANGELOG.md).

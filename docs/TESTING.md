@@ -2,10 +2,12 @@
 
 ## Automated (required before release)
 
-GitHub Actions runs the macOS 26 arm64 test suite on pull requests and pushes to main. CI does not validate real Accessibility permissions or keyboard interception.
+GitHub Actions runs the macOS 26 arm64 Swift tests, Homebrew cask audit, quarantine removal smoke, and offline release-preflight negative tests on pull requests and pushes to main. CI does not validate real Accessibility permissions or actual keyboard interception.
 
 ```bash
 ./scripts/test.sh
+bash scripts/test-release-preflight.sh
+brew audit --cask --skip-style ./Casks/lock-my-keyboard.rb
 ```
 
 Covers:

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build, test, package, publish GitHub release, and refresh the Homebrew cask.
-# First release / unsigned: strips quarantine (no notarization).
+# Unsigned distribution (no Developer ID); source and tag integrity are enforced.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -32,28 +32,9 @@ command -v gh >/dev/null
 command -v brew >/dev/null
 command -v git >/dev/null
 
-# Never overwrite a published artifact or create a release from an uncommitted tree.
-if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  echo "ERROR: expected semantic version X.Y.Z" >&2
-  exit 1
-fi
-PLIST_VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$ROOT/LockMyKeyboard/LockMyKeyboard/Info.plist")"
-if [[ "$VERSION" != "$PLIST_VERSION" ]]; then
-  echo "ERROR: release $VERSION does not match Info.plist version $PLIST_VERSION" >&2
-  exit 1
-fi
-if ! git -C "$ROOT" diff --quiet || ! git -C "$ROOT" diff --cached --quiet; then
-  echo "ERROR: commit source changes before releasing" >&2
-  exit 1
-fi
-if git -C "$ROOT" show-ref --verify --quiet "refs/tags/$TAG"; then
-  echo "ERROR: tag $TAG already exists locally; choose a new version" >&2
-  exit 1
-fi
-if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
-  echo "ERROR: release $TAG already exists; never overwrite a published build" >&2
-  exit 1
-fi
+# Verify source cleanliness and remote tag absence *before* any build output.
+source "$ROOT/scripts/release-preflight.sh"
+verify_release_preflight "$ROOT" "$REPO" "$VERSION"
 SOURCE_SHA="$(git -C "$ROOT" rev-parse HEAD)"
 echo "    source commit: ${SOURCE_SHA}"
 
@@ -98,6 +79,11 @@ else
 fi
 
 echo "==> 6/6 GitHub release ${TAG}"
+# Re-check immediately before publishing; a tag may have appeared while building.
+verify_remote_tag_absent "$REPO" "$TAG"
+test "$(git -C "$ROOT" rev-parse HEAD)" = "$SOURCE_SHA" ||
+  { echo "ERROR: source HEAD changed during release" >&2; exit 1; }
+
 gh release create "$TAG" "$ZIP_PATH" "$DIST/${ZIP_NAME}.sha256" \
   --repo "$REPO" \
   --target "$SOURCE_SHA" \
@@ -134,6 +120,9 @@ See [CHANGELOG.md](https://github.com/mahboobmonnamd/lock-my-keyboard/blob/main/
 - No keystroke logging. Pointer stays active while locked.
 EOF
 )"
+
+# Verify the tag GitHub actually published points to the build's source.
+verify_remote_tag_points_to "$REPO" "$TAG" "$SOURCE_SHA"
 
 echo ""
 echo "Done."

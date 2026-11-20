@@ -20,9 +20,25 @@ jobs:
           sw_vers
           uname -m
           xcodebuild -version
-      - name: Static checks
+      - name: Static checks and actual Homebrew cask audit
         run: |
-          bash -n scripts/test.sh scripts/release.sh
+          bash -n scripts/test.sh scripts/release.sh scripts/release-preflight.sh scripts/test-release-preflight.sh
           ruby -c Casks/lock-my-keyboard.rb
+          brew audit --cask --skip-style ./Casks/lock-my-keyboard.rb
+      - name: Release preflight negative tests (offline)
+        run: bash scripts/test-release-preflight.sh
+      - name: Quarantine handling smoke
+        run: |
+          set -euo pipefail
+          app="$(mktemp -d)/Fixture.app"
+          mkdir -p "$app/Contents"
+          touch "$app/Contents/fixture"
+          /usr/bin/xattr -w com.apple.quarantine "0081;00000000;test;00000000" "$app/Contents/fixture"
+          /usr/bin/xattr -dr com.apple.quarantine "$app"
+          if /usr/bin/xattr -p com.apple.quarantine "$app/Contents/fixture" >/dev/null 2>&1; then
+            echo "Quarantine remains after removal" >&2
+            exit 1
+          fi
+          /usr/bin/xattr -dr com.apple.quarantine "$app" # Already clean must not fail
       - name: Swift tests
         run: ./scripts/test.sh
