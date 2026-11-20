@@ -24,7 +24,11 @@ jobs:
         run: |
           bash -n scripts/test.sh scripts/release.sh scripts/release-preflight.sh scripts/test-release-preflight.sh
           ruby -c Casks/lock-my-keyboard.rb
-          brew audit --cask --skip-style ./Casks/lock-my-keyboard.rb
+          # brew audit no longer accepts a file path. Clone *this checkout* as a local
+          # tap so the audit uses the PR cask, not the published default branch.
+          brew tap mahboobmonnamd/lock-my-keyboard "$PWD"
+          brew trust --cask mahboobmonnamd/lock-my-keyboard/lock-my-keyboard
+          brew audit --cask --skip-style mahboobmonnamd/lock-my-keyboard/lock-my-keyboard
       - name: Release preflight negative tests (offline)
         run: bash scripts/test-release-preflight.sh
       - name: Quarantine handling smoke
