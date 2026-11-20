@@ -24,7 +24,7 @@ open -a LockMyKeyboard
 If you already tapped and saw `Refusing to load cask … from untrusted tap`, run:
 
 ```bash
-brew trust mahboobmonnamd/lock-my-keyboard
+brew trust --cask mahboobmonnamd/lock-my-keyboard/lock-my-keyboard
 brew install --cask lock-my-keyboard
 ```
 
@@ -34,7 +34,7 @@ brew install --cask lock-my-keyboard
 2. Trusts only this cask, not all packages in the tap.
 3. Downloads `LockMyKeyboard-1.0.1.zip` from the GitHub Release.
 4. Installs `LockMyKeyboard.app` into `/Applications`.
-5. Clears quarantine attributes in a cask `postflight` (`xattr -cr`) so an unsigned first release can open without Gatekeeper friction.
+5. Removes the quarantine attribute for this app only in `postflight_steps` (`xattr -dr com.apple.quarantine`) to permit running the unsigned release.
 
 > **Unsigned distribution limitation:** Homebrew's postflight clears quarantine to permit launching without Apple Developer ID. This bypasses Gatekeeper's normal origin verification; it is not a security validation. Install only if you trust this repository and verify the release checksum. Signing/notarization remains deferred due to cost.
 
@@ -86,7 +86,7 @@ open -a LockMyKeyboard
 
 | Issue | Fix |
 | --- | --- |
-| `Refusing to load cask … from untrusted tap` | `brew trust mahboobmonnamd/lock-my-keyboard` then `brew install --cask lock-my-keyboard` |
+| `Refusing to load cask … from untrusted tap` | `brew trust --cask mahboobmonnamd/lock-my-keyboard/lock-my-keyboard` then `brew install --cask lock-my-keyboard` |
 | `brew tap` permission / Cellar not writable | Run `brew doctor` and follow Homebrew's targeted ownership guidance; do **not** recursively change `/opt/homebrew` ownership |
 | App blocked by macOS | Confirm the download source and SHA-256 first. If proceeding with this unsigned release, remove only `com.apple.quarantine` using `xattr -dr com.apple.quarantine /Applications/LockMyKeyboard.app` |
 | Lock does nothing | Grant Accessibility for **Lock My Keyboard**, quit and reopen the app |
@@ -96,8 +96,10 @@ open -a LockMyKeyboard
 
 ```bash
 ./scripts/test.sh
+# First set CFBundleShortVersionString to 1.0.2 in Info.plist and commit.
+# Push the source commit before publishing so the release tag can target it.
 ./scripts/release.sh 1.0.2
-# commit updated Casks/lock-my-keyboard.rb (sha256), push main
+# Then commit the updated Casks/lock-my-keyboard.rb checksum and push main.
 ```
 
 See also [TESTING.md](./TESTING.md) and [CHANGELOG.md](../CHANGELOG.md).

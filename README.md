@@ -47,8 +47,9 @@ open LockMyKeyboard/LockMyKeyboard.xcodeproj
 ### Release
 
 ```bash
-./scripts/release.sh 1.0.1
-# commit updated Casks/lock-my-keyboard.rb sha256, then push
+# Bump the Info.plist version, commit and push it first.
+./scripts/release.sh 1.0.2
+# Commit the updated Casks/lock-my-keyboard.rb checksum and push.
 ```
 
 ## Docs

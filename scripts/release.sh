@@ -37,6 +37,11 @@ if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   echo "ERROR: expected semantic version X.Y.Z" >&2
   exit 1
 fi
+PLIST_VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$ROOT/LockMyKeyboard/LockMyKeyboard/Info.plist")"
+if [[ "$VERSION" != "$PLIST_VERSION" ]]; then
+  echo "ERROR: release $VERSION does not match Info.plist version $PLIST_VERSION" >&2
+  exit 1
+fi
 if ! git -C "$ROOT" diff --quiet || ! git -C "$ROOT" diff --cached --quiet; then
   echo "ERROR: commit source changes before releasing" >&2
   exit 1
@@ -72,13 +77,13 @@ xcodebuild \
 
 test -d "$APP_PATH"
 
-echo "==> 3/6 Clear quarantine attributes"
-/usr/bin/xattr -cr "$APP_PATH" || true
+echo "==> 3/6 Verify release bundle"
+test -f "$APP_PATH/Contents/Info.plist"
+test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP_PATH/Contents/Info.plist")" = "$VERSION"
 
 echo "==> 4/6 Package ${ZIP_NAME}"
 rm -f "$ZIP_PATH"
 ditto -c -k --keepParent "$APP_PATH" "$ZIP_PATH"
-/usr/bin/xattr -cr "$ZIP_PATH" || true
 SHA="$(shasum -a 256 "$ZIP_PATH" | awk '{print $1}')"
 echo "    sha256: ${SHA}"
 echo "$SHA  ${ZIP_NAME}" > "$DIST/${ZIP_NAME}.sha256"
@@ -96,8 +101,8 @@ echo "==> 6/6 GitHub release ${TAG}"
 gh release create "$TAG" "$ZIP_PATH" "$DIST/${ZIP_NAME}.sha256" \
   --repo "$REPO" \
   --target "$SOURCE_SHA" \
-    --title "Lock My Keyboard ${VERSION}" \
-    --notes "$(cat <<EOF
+  --title "Lock My Keyboard ${VERSION}" \
+  --notes "$(cat <<EOF
 ## Lock My Keyboard ${VERSION}
 
 ### Install / upgrade with Homebrew
@@ -125,7 +130,7 @@ Grant **Accessibility** on first Lock. Full guide: docs/INSTALL.md
 See [CHANGELOG.md](https://github.com/mahboobmonnamd/lock-my-keyboard/blob/main/CHANGELOG.md).
 
 ### Notes
-- Unsigned / not notarized (cask postflight clears quarantine).
+- Unsigned / not notarized. The cask removes quarantine, bypassing standard Gatekeeper origin checks; review the source and verify the checksum first.
 - No keystroke logging. Pointer stays active while locked.
 EOF
 )"
@@ -138,6 +143,6 @@ echo "  tag:    ${TAG}"
 echo ""
 echo "Commit the updated cask if SHA/version changed, then:"
 echo "  brew tap mahboobmonnamd/lock-my-keyboard https://github.com/mahboobmonnamd/lock-my-keyboard"
-echo "  brew trust mahboobmonnamd/lock-my-keyboard"
+echo "  brew trust --cask mahboobmonnamd/lock-my-keyboard/lock-my-keyboard"
 echo "  brew install --cask lock-my-keyboard"
 echo "Docs: docs/INSTALL.md"

@@ -14,9 +14,11 @@ cask "lock-my-keyboard" do
 
   # Unsigned distribution: removes quarantine and bypasses Gatekeeper origin checks.
   # Remove when Developer ID notarization becomes available; see docs/INSTALL.md.
-  postflight do
-    app_path = "#{appdir}/LockMyKeyboard.app"
-    system_command "/usr/bin/xattr", args: ["-cr", app_path], sudo: false
+  postflight_steps do
+    run "/usr/bin/xattr",
+        args: ["-dr", "com.apple.quarantine", "{{appdir}}/LockMyKeyboard.app"],
+        must_succeed: false,
+        print_stderr: false
   end
 
   zap trash: [
