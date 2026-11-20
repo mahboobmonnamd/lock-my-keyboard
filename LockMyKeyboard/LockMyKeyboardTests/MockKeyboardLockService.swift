@@ -5,6 +5,7 @@ final class MockKeyboardLockService: KeyboardLocking, @unchecked Sendable {
     private(set) var startCallCount = 0
     private(set) var stopCallCount = 0
     var startError: Error?
+    var activationSucceeds = true
     private(set) var active = false
 
     var isActive: Bool { active }
@@ -14,7 +15,7 @@ final class MockKeyboardLockService: KeyboardLocking, @unchecked Sendable {
         if let startError {
             throw startError
         }
-        active = true
+        active = activationSucceeds
     }
 
     func stop() {
