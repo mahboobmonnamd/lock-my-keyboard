@@ -81,8 +81,7 @@ fi
 echo "==> 6/6 GitHub release ${TAG}"
 # Re-check immediately before publishing; a tag may have appeared while building.
 verify_remote_tag_absent "$REPO" "$TAG"
-test "$(git -C "$ROOT" rev-parse HEAD)" = "$SOURCE_SHA" ||
-  { echo "ERROR: source HEAD changed during release" >&2; exit 1; }
+verify_release_source_unchanged "$ROOT" "$SOURCE_SHA" "$VERSION" "$SHA"
 
 gh release create "$TAG" "$ZIP_PATH" "$DIST/${ZIP_NAME}.sha256" \
   --repo "$REPO" \

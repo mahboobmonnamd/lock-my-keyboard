@@ -16,7 +16,13 @@ git init -q --bare "$REMOTE"
 git init -q "$WORK"
 git -C "$WORK" config user.email "test@example.invalid"
 git -C "$WORK" config user.name "Release Preflight Test"
-mkdir -p "$WORK/LockMyKeyboard/LockMyKeyboard"
+mkdir -p "$WORK/LockMyKeyboard/LockMyKeyboard" "$WORK/Casks"
+cat > "$WORK/Casks/lock-my-keyboard.rb" <<'EOF'
+cask "lock-my-keyboard" do
+  version "1.0.1"
+  sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+end
+EOF
 cp "$ROOT/LockMyKeyboard/LockMyKeyboard/Info.plist" "$WORK/LockMyKeyboard/LockMyKeyboard/Info.plist"
 printf 'tracked\n' > "$WORK/tracked.txt"
 git -C "$WORK" add .
@@ -78,5 +84,41 @@ git -C "$WORK" tag -d "$TAG" >/dev/null
 mv "$REMOTE" "$TMP/remote-unreachable.git"
 expect_fail "unreachable remote fails closed" verify_release_preflight "$WORK" "$REPO" "$VERSION"
 mv "$TMP/remote-unreachable.git" "$REMOTE"
+
+
+
+# Final source verification runs *after* updating the cask and just before
+# publishing. Its only allowed change is the exact version/sha256 cask rewrite.
+RELEASE_SHA="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+cat > "$WORK/Casks/lock-my-keyboard.rb" <<EOF
+cask "lock-my-keyboard" do
+  version "$VERSION"
+  sha256 "$RELEASE_SHA"
+end
+EOF
+cp "$WORK/Casks/lock-my-keyboard.rb" "$TMP/expected-cask"
+verify_release_source_unchanged "$WORK" "$SOURCE_SHA" "$VERSION" "$RELEASE_SHA"
+ok "final check allows only expected cask checksum update"
+
+printf 'late edit\n' >> "$WORK/tracked.txt"
+expect_fail "source modified after preflight blocks publishing" verify_release_source_unchanged "$WORK" "$SOURCE_SHA" "$VERSION" "$RELEASE_SHA"
+git -C "$WORK" checkout -q -- tracked.txt
+
+printf 'late asset\n' > "$WORK/late-untracked-resource.txt"
+expect_fail "new source asset after preflight blocks publishing" verify_release_source_unchanged "$WORK" "$SOURCE_SHA" "$VERSION" "$RELEASE_SHA"
+rm "$WORK/late-untracked-resource.txt"
+
+printf 'late staged asset\n' > "$WORK/late-staged-resource.txt"
+git -C "$WORK" add late-staged-resource.txt
+expect_fail "staged source after preflight blocks publishing" verify_release_source_unchanged "$WORK" "$SOURCE_SHA" "$VERSION" "$RELEASE_SHA"
+git -C "$WORK" reset -q -- late-staged-resource.txt
+rm "$WORK/late-staged-resource.txt"
+
+printf '# unapproved cask change\n' >> "$WORK/Casks/lock-my-keyboard.rb"
+expect_fail "unexpected cask change after preflight blocks publishing" verify_release_source_unchanged "$WORK" "$SOURCE_SHA" "$VERSION" "$RELEASE_SHA"
+cp "$TMP/expected-cask" "$WORK/Casks/lock-my-keyboard.rb"
+
+git -C "$WORK" commit -q --allow-empty -m "changed head after build"
+expect_fail "new HEAD after preflight blocks publishing" verify_release_source_unchanged "$WORK" "$SOURCE_SHA" "$VERSION" "$RELEASE_SHA"
 
 printf 'Release preflight: %s cases passed\n' "$count"

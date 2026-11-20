@@ -23,6 +23,7 @@ jobs:
       - name: Static checks and actual Homebrew cask audit
         run: |
           bash -n scripts/test.sh scripts/release.sh scripts/release-preflight.sh scripts/test-release-preflight.sh
+          test -x scripts/release.sh  # Catch executable-bit regressions
           ruby -c Casks/lock-my-keyboard.rb
           # brew audit no longer accepts a file path. Clone *this checkout* as a local
           # tap so the audit uses the PR cask, not the published default branch.

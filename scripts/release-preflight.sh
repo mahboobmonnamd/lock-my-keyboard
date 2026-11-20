@@ -79,3 +79,41 @@ verify_release_preflight() {
   fi
   verify_remote_tag_absent "$repo" "$tag"
 }
+
+
+# Check the actual source tree immediately before publication. The release script
+# edits only the Homebrew cask version/checksum after building, so verify that its
+# contents equal those two expected changes rather than excluding it unconditionally.
+# Build outputs are ignored by git; all tracked/untracked source inputs must be clean.
+verify_release_source_unchanged() {
+  local root="$1" source_sha="$2" version="$3" sha="$4"
+  local head status base_cask expected_cask cask_path
+
+  [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ && "$sha" =~ ^[0-9a-f]{64}$ ]] ||
+    { release_error "invalid release version or SHA-256 for final source check"; return 1; }
+
+  head="$(git -C "$root" rev-parse HEAD)" ||
+    { release_error "cannot read source HEAD"; return 1; }
+  [[ "$head" == "$source_sha" ]] ||
+    { release_error "source HEAD changed during release ($head != $source_sha)"; return 1; }
+
+  # Git status checks both the index and worktree and catches untracked inputs.
+  # Only the cask is exempt here; its exact expected contents are checked below.
+  status="$(git -C "$root" status --porcelain=v1 --untracked-files=all -- . ':(exclude)Casks/lock-my-keyboard.rb')" ||
+    { release_error "cannot recheck release source files"; return 1; }
+  if [[ -n "$status" ]]; then
+    printf '%s\n' "$status" >&2
+    release_error "source files changed after preflight; release aborted"
+    return 1
+  fi
+
+  cask_path="$root/Casks/lock-my-keyboard.rb"
+  base_cask="$(git -C "$root" show "$source_sha:Casks/lock-my-keyboard.rb")" ||
+    { release_error "cannot read source cask from commit"; return 1; }
+  expected_cask="$(printf '%s\n' "$base_cask" | /usr/bin/sed -E \
+    -e "s/version \"[^\"]+\"/version \"${version}\"/" \
+    -e "s/sha256 \"[^\"]+\"/sha256 \"${sha}\"/")" ||
+    { release_error "cannot construct expected release cask"; return 1; }
+  [[ -f "$cask_path" && "$(cat "$cask_path")" == "$expected_cask" ]] ||
+    { release_error "Homebrew cask differs from expected version/checksum-only update"; return 1; }
+}

@@ -7,6 +7,7 @@ GitHub Actions runs the macOS 26 arm64 Swift tests, Homebrew cask audit, quarant
 ```bash
 ./scripts/test.sh
 bash scripts/test-release-preflight.sh
+test -x scripts/release.sh
 brew audit --cask --skip-style mahboobmonnamd/lock-my-keyboard/lock-my-keyboard  # after tapping this checkout
 ```
 
