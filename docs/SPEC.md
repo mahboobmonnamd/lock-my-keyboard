@@ -26,7 +26,8 @@ Lock My Keyboard is a one-window macOS app for Apple Silicon (macOS 26). The use
 | --- | --- | --- | --- |
 | Idle | Lock | Ready to lock | Normal |
 | Needs permission | Lock (or Open Settings) | Accessibility permission required | Normal |
-| Locked | Unlock | Keyboard locked — click Unlock when done | Suppressed |
+| Locked | Unlock | Keyboard locked — click Unlock when done | Suppressed while tap remains active |
+| Protection lost | Lock | Keyboard protection stopped; typing may be active | Normal or unknown |
 
 ### 2.3 Flows
 
@@ -67,6 +68,7 @@ Lock My Keyboard is a one-window macOS app for Apple Silicon (macOS 26). The use
 | SPEC-007 | Quit while locked restores input (fail-open) | P0 |
 | SPEC-008 | arm64 + macOS 26 only | P0 |
 | SPEC-009 | No keystroke logging or network use | P0 |
+| SPEC-010 | Detect disabled/invalid event tap and revoked permission while locked; release tap and warn instead of showing stale Locked state | P0 |
 
 ## 4. Non-requirements (MVP)
 
@@ -93,6 +95,7 @@ Lock My Keyboard is a one-window macOS app for Apple Silicon (macOS 26). The use
 4. Quitting the app while Locked restores typing.
 5. App UI matches §2.1 (keyboard image + Lock/Unlock).
 6. Binary is arm64 and declares macOS 26 deployment target.
+7. If a tap is disabled or permission revoked while locked, the app stops reporting Locked promptly and warns that typing may be active.
 
 ## 7. Spike checklist (gate)
 

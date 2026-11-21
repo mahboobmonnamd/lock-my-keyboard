@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build, test, package, publish GitHub release, and refresh the Homebrew cask.
-# First release / unsigned: strips quarantine (no notarization).
+# Unsigned distribution (no Developer ID); source and tag integrity are enforced.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -30,6 +30,13 @@ echo "==> Release ${TAG} (${REPO})"
 command -v xcodebuild >/dev/null
 command -v gh >/dev/null
 command -v brew >/dev/null
+command -v git >/dev/null
+
+# Verify source cleanliness and remote tag absence *before* any build output.
+source "$ROOT/scripts/release-preflight.sh"
+verify_release_preflight "$ROOT" "$REPO" "$VERSION"
+SOURCE_SHA="$(git -C "$ROOT" rev-parse HEAD)"
+echo "    source commit: ${SOURCE_SHA}"
 
 echo "==> 1/6 Tests"
 bash "$ROOT/scripts/test.sh"
@@ -51,13 +58,13 @@ xcodebuild \
 
 test -d "$APP_PATH"
 
-echo "==> 3/6 Clear quarantine attributes"
-/usr/bin/xattr -cr "$APP_PATH" || true
+echo "==> 3/6 Verify release bundle"
+test -f "$APP_PATH/Contents/Info.plist"
+test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP_PATH/Contents/Info.plist")" = "$VERSION"
 
 echo "==> 4/6 Package ${ZIP_NAME}"
 rm -f "$ZIP_PATH"
 ditto -c -k --keepParent "$APP_PATH" "$ZIP_PATH"
-/usr/bin/xattr -cr "$ZIP_PATH" || true
 SHA="$(shasum -a 256 "$ZIP_PATH" | awk '{print $1}')"
 echo "    sha256: ${SHA}"
 echo "$SHA  ${ZIP_NAME}" > "$DIST/${ZIP_NAME}.sha256"
@@ -72,21 +79,22 @@ else
 fi
 
 echo "==> 6/6 GitHub release ${TAG}"
-if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
-  echo "    release ${TAG} exists — uploading assets"
-  gh release upload "$TAG" "$ZIP_PATH" "$DIST/${ZIP_NAME}.sha256" --repo "$REPO" --clobber
-else
-  gh release create "$TAG" "$ZIP_PATH" "$DIST/${ZIP_NAME}.sha256" \
-    --repo "$REPO" \
-    --title "Lock My Keyboard ${VERSION}" \
-    --notes "$(cat <<EOF
+# Re-check immediately before publishing; a tag may have appeared while building.
+verify_remote_tag_absent "$REPO" "$TAG"
+verify_release_source_unchanged "$ROOT" "$SOURCE_SHA" "$VERSION" "$SHA"
+
+gh release create "$TAG" "$ZIP_PATH" "$DIST/${ZIP_NAME}.sha256" \
+  --repo "$REPO" \
+  --target "$SOURCE_SHA" \
+  --title "Lock My Keyboard ${VERSION}" \
+  --notes "$(cat <<EOF
 ## Lock My Keyboard ${VERSION}
 
 ### Install / upgrade with Homebrew
 
 \`\`\`bash
 brew tap mahboobmonnamd/lock-my-keyboard https://github.com/mahboobmonnamd/lock-my-keyboard
-brew trust mahboobmonnamd/lock-my-keyboard
+brew trust --cask mahboobmonnamd/lock-my-keyboard/lock-my-keyboard
 brew update
 brew upgrade --cask lock-my-keyboard
 # or first install:
@@ -97,7 +105,7 @@ open -a LockMyKeyboard
 Or download \`${ZIP_NAME}\`, unzip, then:
 
 \`\`\`bash
-xattr -cr LockMyKeyboard.app
+xattr -dr com.apple.quarantine LockMyKeyboard.app
 open LockMyKeyboard.app
 \`\`\`
 
@@ -107,11 +115,13 @@ Grant **Accessibility** on first Lock. Full guide: docs/INSTALL.md
 See [CHANGELOG.md](https://github.com/mahboobmonnamd/lock-my-keyboard/blob/main/CHANGELOG.md).
 
 ### Notes
-- Unsigned / not notarized (cask postflight clears quarantine).
+- Unsigned / not notarized. The cask removes quarantine, bypassing standard Gatekeeper origin checks; review the source and verify the checksum first.
 - No keystroke logging. Pointer stays active while locked.
 EOF
 )"
-fi
+
+# Verify the tag GitHub actually published points to the build's source.
+verify_remote_tag_points_to "$REPO" "$TAG" "$SOURCE_SHA"
 
 echo ""
 echo "Done."
@@ -121,6 +131,6 @@ echo "  tag:    ${TAG}"
 echo ""
 echo "Commit the updated cask if SHA/version changed, then:"
 echo "  brew tap mahboobmonnamd/lock-my-keyboard https://github.com/mahboobmonnamd/lock-my-keyboard"
-echo "  brew trust mahboobmonnamd/lock-my-keyboard"
+echo "  brew trust --cask mahboobmonnamd/lock-my-keyboard/lock-my-keyboard"
 echo "  brew install --cask lock-my-keyboard"
 echo "Docs: docs/INSTALL.md"
